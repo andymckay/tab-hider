@@ -1,10 +1,11 @@
 {
-  "description": "Simple tab snoozer.",
+  "description": "Simple tab hider.",
   "homepage_url": "https://github.com/andymckay/snooze-tabs",
   "manifest_version": 2,
-  "name": "Snooze tabs",
+  "name": "Tab hider",
   "permissions": [
     "menus",
+    "notifications",
     "tabs",
     "tabHide"
   ],
@@ -15,11 +16,11 @@
     "browser_style": true,
     "default_title": "Hidden tabs",
     "default_icon": {
-      "128": "alarm.svg"
+      "128": "off.svg"
     }
   },
   "icons": {
-    "128": "alarm.svg"
+    "128": "off.svg"
   },
   "version": "0.1"
 }

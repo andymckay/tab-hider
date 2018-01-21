@@ -4,12 +4,17 @@
   <head>
     <meta charset="utf-8">
     <link rel="stylesheet" href="bootstrap.min.css"/>
-    <link rel="icon" type="image/svg+xml" href="alarm.svg" />
+    <link rel="icon" type="image/svg+xml" href="off.svg" />
     <title>Hidden tabs</title>
   </head>
   <body>
     <div class="container">
       <h3>Hidden tabs</h3>
+      <p><b>Note:</b> the API used in this add-on is experimental and to use it
+        you must go to <code>about:config</code> and set
+        <code>extensions.webextensions.tabhide.enabled</code> to
+        <code>true</code>.
+      </p>
       <table class="table table-striped">
         <thead>
           <tr>
@@ -17,7 +22,7 @@
           </tr>
         </thead>
         <tbody id="results">
-          
+
         </tbody>
       </table>
     </div>
