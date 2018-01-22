@@ -3,16 +3,8 @@ function log(msg) {
 }
 
 async function hideTab(id) {
-  let res = await browser.tabs.hide(id);
-  if (!res.length) {
-    log(`Failed to hide tab ${id}`);
-    browser.notifications.create(id.toString(), {
-      type: "basic",
-      title: "Tab hider",
-      message: "Failed to hide this tab",
-      iconUrl: browser.extension.getURL("/") + "off.svg",
-    });
-  }
+  await browser.tabs.hide(id);
+  // TODO: something about tabs you can't hide.
 }
 
 async function hide(info, tab) {
@@ -51,15 +43,37 @@ browser.browserAction.onClicked.addListener(() => {
 
 function showTab(message) {
   log(`Showing tab: ${message.tab}`);
-  browser.tabs.show(message.tab);
+  browser.tabs.show(message.tab)
+    .then(_ => { // eslint-disable-line no-unused-vars
+      log("Calling tab update");
+      browser.tabs.update(message.tab, {active: true});
+    });
+}
+
+function closeTab(message) {
+  log(`Closing tab: ${message.tab}`);
+  browser.tabs.remove(message.tab);
+}
+
+function actionTab(message) {
+  if (message.action === "show") {
+    showTab(message);
+  }
+  if (message.action === "close") {
+    closeTab(message);
+  }
 }
 
 function listenTab(tabId, changeInfo, tab) {
   if (changeInfo.hidden) {
-    browser.runtime.sendMessage({query: "updateTabs", tabId: tab.id, hidden: changeInfo.hidden});
+    browser.runtime.sendMessage({
+      query: "updateTabs",
+      tabId: tab.id,
+      hidden: changeInfo.hidden
+    });
   }
 }
 
 browser.menus.onClicked.addListener(hide);
 browser.tabs.onUpdated.addListener(listenTab);
-browser.runtime.onMessage.addListener(showTab);
+browser.runtime.onMessage.addListener(actionTab);
