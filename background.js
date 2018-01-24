@@ -9,7 +9,7 @@ async function hideTab(id) {
   // TODO: something about tabs you can't hide.
   let tab = await browser.tabs.get(id);
   if (tab.hidden) {
-    tabUsage.delete(id.toString());
+    tabUsage.delete(id);
   } else {
     log(`Failed to hide tab ${id}`);
   }
@@ -63,6 +63,11 @@ function closeTab(message) {
   browser.tabs.remove(message.tab);
 }
 
+function discardTab(message) {
+  log(`Discarding tab: ${message.tab}`);
+  browser.tabs.discard(message.tab);
+}
+
 function actionTab(message) {
   if (message.action === "show") {
     showTab(message);
@@ -70,9 +75,12 @@ function actionTab(message) {
   if (message.action === "close") {
     closeTab(message);
   }
+  if (message.action === "discard") {
+    discardTab(message);
+  }
 }
 
-function removedTab(tabId, removeInfo) {
+function removedTab(tabId, removeInfo) { // eslint-disable-line no-unused-vars
   log(`Tab ${tabId} was removed from usage when removed`);
   tabUsage.delete(tabId);
 }
@@ -92,23 +100,29 @@ function updatedTab(tabId, changeInfo, tab) {
   }
 }
 
-const MAX_LENGTH = 1000 * 60 * 1;
+async function sweepTabs(alarmInfo) { // eslint-disable-line no-unused-vars
 
-function sweepTabs(alarmInfo) {
-  log(`Sweeping tabs`);
+  let config = await browser.storage.local.get();
+  if (!config.enable || config.enable !== "yes") {
+    log("Not enabled");
+    return;
+  }
+  log("Sweeping tabs");
   let now = Date.now();
+  let interval = parseInt(config.interval ? config.interval : 15);
+  let MAX_LENGTH = 1000 * 60 * interval;
+  log(`Max length is ${MAX_LENGTH}`);
   for (let key of tabUsage.keys()) {
     let lastUsed = tabUsage.get(key);
     if ((now - lastUsed) > MAX_LENGTH) {
-      hideTab(parseInt(key));
-      log(`Closing tab ${key}`);
+      hideTab(key);
+      log(`Hiding tab ${key}`);
     }
   }
 }
 
-browser.alarms.create('sweep', {periodInMinutes: 1});
-
-browser.alarms.onAlarm.addListener(sweepTabs)
+browser.alarms.create("sweep", {periodInMinutes: 1});
+browser.alarms.onAlarm.addListener(sweepTabs);
 browser.menus.onClicked.addListener(hide);
 browser.tabs.onActivated.addListener(activatedTab);
 browser.tabs.onUpdated.addListener(updatedTab);

@@ -1,16 +1,30 @@
 let root = document.getElementById("results");
+let button = document.querySelectorAll("button")[0];
+
+function getId(event) {
+  return event.target.parentNode.parentNode.id;
+}
+
+function sendMessage(tabId, action) {
+  browser.runtime.sendMessage({tab: parseInt(tabId), action: action});
+}
 
 function showTab(event) {
-  let id = event.target.parentNode.parentNode.id;
-  browser.runtime.sendMessage({tab: parseInt(id), action: "show"});
+  let id = getId(event);
+  sendMessage(id, "show");
   removeTab(id);
   event.preventDefault();
 }
 
 function closeTab(event) {
-  let id = event.target.parentNode.parentNode.id;
-  browser.runtime.sendMessage({tab: parseInt(id), action: "close"});
+  let id = getId(event);
+  sendMessage(id, "show");
   removeTab(id);
+  event.preventDefault();
+}
+
+function discardTab(event) {
+  sendMessage(getId(event), "discard");
   event.preventDefault();
 }
 
@@ -41,9 +55,17 @@ function addTab(tab) {
   td.appendChild(a);
   tr.appendChild(td);
 
+  let tdDiscard = document.createElement("td");
+  let aDiscard = document.createElement("a");
+  aDiscard.innerText = "Discard";
+  aDiscard.href = "#";
+  aDiscard.addEventListener("click", discardTab);
+  tdDiscard.appendChild(aDiscard);
+  tr.appendChild(tdDiscard);
+
   let tdClose = document.createElement("td");
   let aClose = document.createElement("a");
-  aClose.innerText = "x";
+  aClose.innerText = "Close";
   aClose.href = "#";
   aClose.addEventListener("click", closeTab);
   tdClose.appendChild(aClose);
@@ -74,5 +96,33 @@ function updateTabs(message) {
     .then(tab => addTab(tab));
 }
 
+
+async function processForm(event) {
+  event.preventDefault();
+
+  function revertButton() {
+    button.innerText = "Update";
+    button.className = "btn btn-primary";
+  }
+  let config = await browser.storage.local.get();
+  config.enable = document.getElementById("enable").value;
+  config.interval = parseInt(document.getElementById("interval").value);
+  await browser.storage.local.set(config);
+
+  button.innerText = "Saved";
+  button.className = "btn btn-success";
+  window.setTimeout(revertButton, 1000);
+}
+
 browser.runtime.onMessage.addListener(updateTabs);
-listTabs();
+
+async function setupPage() {
+  listTabs();
+  let config = await browser.storage.local.get();
+  document.getElementById("enable").value = config.enable ? "yes" : "no";
+  document.getElementById("interval").value = config.interval ? config.interval : "15";
+  button.disabled = false;
+  button.addEventListener("click", processForm);
+}
+
+setupPage();

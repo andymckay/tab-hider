@@ -6,21 +6,48 @@
     <link rel="stylesheet" href="bootstrap.min.css"/>
     <link rel="stylesheet" href="hidden.css"/>
     <link rel="icon" type="image/svg+xml" href="off.svg" />
-    <title>Hidden tabs</title>
+    <title>Tab hider</title>
   </head>
   <body>
     <div class="container">
-      <h3>Hidden tabs</h3>
+      <h3>Tab hider extension</h3>
       <p><b>Note:</b> the API used in this add-on is experimental and to use it
         you must go to <code>about:config</code> and set
         <code>extensions.webextensions.tabhide.enabled</code> to
         <code>true</code>.
       </p>
+      <h4>Hidden tabs list</h4>
       <table class="table table-striped">
+        <thead>
+          <tr>
+            <th></th>
+            <th></th>
+            <th colspan="2">Actions</th>
+        </thead>
         <tbody id="results">
-
         </tbody>
       </table>
+      <h4>Automatically hide tabs</h4>
+      <form>
+        <div class="form-group">
+          <label class="col-form-label" for="submit">Automatically sweep and hide tabs every minute?</label>
+          <select class="form-control" type="select" id="enable" data-key="enable">
+            <option value="yes">Yes, hide tabs automatically.</option>
+            <option value="no" default>No, do not hide tabs automatically.</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="col-form-label" for="submit">How long after a tab is accessed should it be hidden?</label>
+          <select class="form-control" type="select" id="interval" data-key="interval">
+            <option value="1">1 minute</option>
+            <option value="15">15 minutes</option>
+            <option value="60">1 hour</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <button type="submit" class="btn btn-primary" disabled>Update</button>
+        </div>
+      </form>
     </div>
     <script src="hidden.js"></script>
   </body>

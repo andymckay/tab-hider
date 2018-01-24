@@ -7,6 +7,7 @@
     "alarms",
     "menus",
     "notifications",
+    "storage",
     "tabs",
     "tabHide"
   ],
@@ -23,7 +24,7 @@
   "icons": {
     "128": "off.svg"
   },
-  "version": "0.2.1",
+  "version": "0.3",
   "applications": {
     "gecko": {
       "id": "tab-hider@andym.mozilla.com",
