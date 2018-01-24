@@ -1,3 +1,5 @@
+var tabUsage = new Map();
+
 function log(msg) {
   console.log(`[snooze-tabs] ${msg}`); // eslint-disable-line no-console
 }
@@ -5,6 +7,12 @@ function log(msg) {
 async function hideTab(id) {
   await browser.tabs.hide(id);
   // TODO: something about tabs you can't hide.
+  let tab = await browser.tabs.get(id);
+  if (tab.hidden) {
+    tabUsage.delete(id.toString());
+  } else {
+    log(`Failed to hide tab ${id}`);
+  }
 }
 
 async function hide(info, tab) {
@@ -64,7 +72,17 @@ function actionTab(message) {
   }
 }
 
-function listenTab(tabId, changeInfo, tab) {
+function removedTab(tabId, removeInfo) {
+  log(`Tab ${tabId} was removed from usage when removed`);
+  tabUsage.delete(tabId);
+}
+
+function activatedTab(activeInfo) {
+  log(`Tab ${activeInfo.tabId} was used an entered into usage when activated`);
+  tabUsage.set(activeInfo.tabId, Date.now());
+}
+
+function updatedTab(tabId, changeInfo, tab) {
   if (changeInfo.hidden) {
     browser.runtime.sendMessage({
       query: "updateTabs",
@@ -74,6 +92,25 @@ function listenTab(tabId, changeInfo, tab) {
   }
 }
 
+const MAX_LENGTH = 1000 * 60 * 1;
+
+function sweepTabs(alarmInfo) {
+  log(`Sweeping tabs`);
+  let now = Date.now();
+  for (let key of tabUsage.keys()) {
+    let lastUsed = tabUsage.get(key);
+    if ((now - lastUsed) > MAX_LENGTH) {
+      hideTab(parseInt(key));
+      log(`Closing tab ${key}`);
+    }
+  }
+}
+
+browser.alarms.create('sweep', {periodInMinutes: 1});
+
+browser.alarms.onAlarm.addListener(sweepTabs)
 browser.menus.onClicked.addListener(hide);
-browser.tabs.onUpdated.addListener(listenTab);
+browser.tabs.onActivated.addListener(activatedTab);
+browser.tabs.onUpdated.addListener(updatedTab);
+browser.tabs.onRemoved.addListener(removedTab);
 browser.runtime.onMessage.addListener(actionTab);
