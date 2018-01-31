@@ -18,7 +18,7 @@ function showTab(event) {
 
 function closeTab(event) {
   let id = getId(event);
-  sendMessage(id, "show");
+  sendMessage(id, "close");
   removeTab(id);
   event.preventDefault();
 }
@@ -107,6 +107,9 @@ async function processForm(event) {
   let config = await browser.storage.local.get();
   config.enable = document.getElementById("enable").value;
   config.interval = parseInt(document.getElementById("interval").value);
+
+  config.enableClose = document.getElementById("enableClose").value;
+  config.intervalClose = parseInt(document.getElementById("intervalClose").value);
   await browser.storage.local.set(config);
 
   button.innerText = "Saved";
@@ -121,6 +124,11 @@ async function setupPage() {
   let config = await browser.storage.local.get();
   document.getElementById("enable").value = config.enable ? "yes" : "no";
   document.getElementById("interval").value = config.interval ? config.interval : "15";
+
+  document.getElementById("enableClose").value = config.enableClose ? "yes" : "no";
+  document.getElementById("intervalClose").value = 
+    config.intervalClose ? config.intervalClose : "60"; // 60 minutes
+
   button.disabled = false;
   button.addEventListener("click", processForm);
 }

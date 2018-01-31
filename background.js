@@ -8,9 +8,7 @@ async function hideTab(id) {
   await browser.tabs.hide(id);
   // TODO: something about tabs you can't hide.
   let tab = await browser.tabs.get(id);
-  if (tab.hidden) {
-    tabUsage.delete(id);
-  } else {
+  if (!tab.hidden) {
     log(`Failed to hide tab ${id}`);
   }
 }
@@ -58,9 +56,15 @@ function showTab(message) {
     });
 }
 
-function closeTab(message) {
-  log(`Closing tab: ${message.tab}`);
-  browser.tabs.remove(message.tab);
+function closeHiddenTab(message) {
+  let tabId = message.tab;
+  browser.tabs.get(tabId)
+    .then(tab => {
+      if (!tab.active && tab.hidden) {
+        log(`Closing tab: ${tabId}`);
+        browser.tabs.remove(tab.id);
+      }
+    })
 }
 
 function discardTab(message) {
@@ -73,7 +77,7 @@ function actionTab(message) {
     showTab(message);
   }
   if (message.action === "close") {
-    closeTab(message);
+    closeHiddenTab(message);
   }
   if (message.action === "discard") {
     discardTab(message);
@@ -103,14 +107,19 @@ function updatedTab(tabId, changeInfo, tab) {
 async function sweepTabs(alarmInfo) { // eslint-disable-line no-unused-vars
 
   let config = await browser.storage.local.get();
+  await sweepHideTabs(config);
+  await sweepCloseTabs(config);
+}
+
+async function sweepHideTabs(config) {
   if (!config.enable || config.enable !== "yes") {
     log("Not enabled");
     return;
   }
-  log("Sweeping tabs");
+  log("Sweeping tabs to hide");
   let now = Date.now();
   let interval = parseInt(config.interval ? config.interval : 15);
-  let MAX_LENGTH = 1000 * 60 * interval;
+  let MAX_LENGTH = 1000; // * 60 * interval;
   log(`Max length is ${MAX_LENGTH}`);
   for (let key of tabUsage.keys()) {
     let lastUsed = tabUsage.get(key);
@@ -118,7 +127,25 @@ async function sweepTabs(alarmInfo) { // eslint-disable-line no-unused-vars
       hideTab(key);
       log(`Hiding tab ${key}`);
     }
+  }  
+}
+
+async function sweepCloseTabs(config) {
+  if (!config.enableClose || config.enableClose !== "yes") {
+    log("Not enabled");
+    return;
   }
+  log("Sweeping tabs to close");
+  let now = Date.now();
+  let interval = parseInt(config.intervalClose ? config.intervalClose : 60); // minutes
+  let MAX_LENGTH = 1000; //* 60 * interval;
+  log(`Max length is ${MAX_LENGTH}`);
+  for (let key of tabUsage.keys()) {
+    let lastUsed = tabUsage.get(key);
+    if ((now - lastUsed) > MAX_LENGTH) {
+      closeHiddenTab({tab: key});
+    }
+  }  
 }
 
 browser.alarms.create("sweep", {periodInMinutes: 1});

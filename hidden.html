@@ -45,6 +45,20 @@
           </select>
         </div>
         <div class="form-group">
+          <label class="col-form-label" for="submit">Automatically sweep and close hidden tabs?</label>
+          <select class="form-control" type="select" id="enableClose" data-key="enableClose">
+            <option value="yes">Yes, close tabs automatically.</option>
+            <option value="no" default>No, do not close tabs automatically.</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="col-form-label" for="submit">How long after a tab is accessed should it be hidden?</label>
+          <select class="form-control" type="select" id="intervalClose" data-key="intervalClose">
+            <option value="60">1 hour</option>
+            <option value="300">5 hours</option>
+          </select>
+        </div>
+        <div class="form-group">
           <button type="submit" class="btn btn-primary" disabled>Update</button>
         </div>
       </form>
