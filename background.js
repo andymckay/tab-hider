@@ -119,7 +119,7 @@ async function sweepHideTabs(config) {
   log("Sweeping tabs to hide");
   let now = Date.now();
   let interval = parseInt(config.interval ? config.interval : 15);
-  let MAX_LENGTH = 1000; // * 60 * interval;
+  let MAX_LENGTH = 1000 * 60 * interval;
   log(`Max length is ${MAX_LENGTH}`);
   for (let key of tabUsage.keys()) {
     let lastUsed = tabUsage.get(key);
@@ -138,7 +138,7 @@ async function sweepCloseTabs(config) {
   log("Sweeping tabs to close");
   let now = Date.now();
   let interval = parseInt(config.intervalClose ? config.intervalClose : 60); // minutes
-  let MAX_LENGTH = 1000; //* 60 * interval;
+  let MAX_LENGTH = 1000 * 60 * interval;
   log(`Max length is ${MAX_LENGTH}`);
   for (let key of tabUsage.keys()) {
     let lastUsed = tabUsage.get(key);
