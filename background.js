@@ -5,9 +5,14 @@ function log(msg) {
 }
 
 async function hideTab(id) {
+  let tab = await browser.tabs.get(id);
+  if (tab.url.startsWith('about:') || tab.url.startsWith('moz-extension:')) {
+    log(`Closing tab: ${id}`);
+    browser.tabs.remove(id)
+  }
   await browser.tabs.hide(id);
   // TODO: something about tabs you can't hide.
-  let tab = await browser.tabs.get(id);
+  tab = await browser.tabs.get(id);
   if (!tab.hidden) {
     log(`Failed to hide tab ${id}`);
   }
@@ -78,7 +83,7 @@ function closeHiddenTab(message) {
   browser.tabs.get(tabId)
     .then(tab => {
       if (!tab.active && tab.hidden) {
-        log(`Closing tab: ${tabId}`);
+        log(`Closing tab: ${tab.id}`);
         browser.tabs.remove(tab.id)
         .then(_ => { // eslint-disable-line no-unused-vars
           updateCount();
