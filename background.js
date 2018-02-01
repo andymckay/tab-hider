@@ -11,6 +11,20 @@ async function hideTab(id) {
   if (!tab.hidden) {
     log(`Failed to hide tab ${id}`);
   }
+  updateCount();
+}
+
+async function updateCount() {
+  let k = 0;
+  browser.tabs.query({})
+    .then(tabs => {
+      for (let tab of tabs) { 
+        if (tab.hidden) {
+          k++;
+        }
+      }
+      browser.browserAction.setBadgeText({text: k.toString()});
+    });
 }
 
 async function hide(info, tab) {
@@ -52,7 +66,10 @@ function showTab(message) {
   browser.tabs.show(message.tab)
     .then(_ => { // eslint-disable-line no-unused-vars
       log("Calling tab update");
-      browser.tabs.update(message.tab, {active: true});
+      browser.tabs.update(message.tab, {active: true})
+      .then(_ => { // eslint-disable-line no-unused-vars
+        updateCount();
+      })
     });
 }
 
@@ -62,9 +79,13 @@ function closeHiddenTab(message) {
     .then(tab => {
       if (!tab.active && tab.hidden) {
         log(`Closing tab: ${tabId}`);
-        browser.tabs.remove(tab.id);
+        browser.tabs.remove(tab.id)
+        .then(_ => { // eslint-disable-line no-unused-vars
+          updateCount();
+        })
       }
     })
+  
 }
 
 function discardTab(message) {
@@ -105,7 +126,6 @@ function updatedTab(tabId, changeInfo, tab) {
 }
 
 async function sweepTabs(alarmInfo) { // eslint-disable-line no-unused-vars
-
   let config = await browser.storage.local.get();
   await sweepHideTabs(config);
   await sweepCloseTabs(config);
@@ -148,7 +168,7 @@ async function sweepCloseTabs(config) {
   }  
 }
 
-browser.alarms.create("sweep", {periodInMinutes: 1});
+browser.alarms.create("count", {periodInMinutes: 1});
 browser.alarms.onAlarm.addListener(sweepTabs);
 browser.menus.onClicked.addListener(hide);
 browser.tabs.onActivated.addListener(activatedTab);

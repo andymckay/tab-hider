@@ -24,7 +24,7 @@
   "icons": {
     "128": "off.svg"
   },
-  "version": "0.4.1",
+  "version": "0.4.2",
   "applications": {
     "gecko": {
       "id": "tab-hider@andym.mozilla.com",
