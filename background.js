@@ -23,7 +23,7 @@ async function updateCount() {
   let k = 0;
   browser.tabs.query({})
     .then(tabs => {
-      for (let tab of tabs) { 
+      for (let tab of tabs) {
         if (tab.hidden) {
           k++;
         }
@@ -90,7 +90,7 @@ function closeHiddenTab(message) {
         })
       }
     })
-  
+
 }
 
 function discardTab(message) {
@@ -113,6 +113,7 @@ function actionTab(message) {
 function removedTab(tabId, removeInfo) { // eslint-disable-line no-unused-vars
   log(`Tab ${tabId} was removed from usage when removed`);
   tabUsage.delete(tabId);
+  updateCount();
 }
 
 function activatedTab(activeInfo) {
@@ -152,7 +153,7 @@ async function sweepHideTabs(config) {
       hideTab(key);
       log(`Hiding tab ${key}`);
     }
-  }  
+  }
 }
 
 async function sweepCloseTabs(config) {
@@ -170,7 +171,7 @@ async function sweepCloseTabs(config) {
     if ((now - lastUsed) > MAX_LENGTH) {
       closeHiddenTab({tab: key});
     }
-  }  
+  }
 }
 
 browser.alarms.create("count", {periodInMinutes: 1});
