@@ -39,14 +39,6 @@ function addTab(tab) {
   let tr = document.createElement("tr");
   tr.id = tab.id;
 
-  let tdIcon = document.createElement("td");
-  let imgIcon = document.createElement("img");
-  if (tab.favIconUrl && tab.favIconUrl.startsWith("http")) {
-    imgIcon.src = tab.favIconUrl;
-  }
-  tdIcon.appendChild(imgIcon);
-  tr.appendChild(tdIcon);
-
   let td = document.createElement("td");
   let a = document.createElement("a");
   a.innerText = tab.title;

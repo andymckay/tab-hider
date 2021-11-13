@@ -5,7 +5,13 @@ function log(msg) {
 }
 
 async function hideTab(id) {
-  let tab = await browser.tabs.get(id);
+  let tab = null;
+  try {
+    tab = await browser.tabs.get(id);
+  } catch(e) {
+    console.error(e);
+    return;
+  }
   if (tab.url.startsWith('about:') || tab.url.startsWith('moz-extension:')) {
     log(`Closing tab: ${id}`);
     browser.tabs.remove(id)
@@ -111,13 +117,13 @@ function actionTab(message) {
 }
 
 function removedTab(tabId, removeInfo) { // eslint-disable-line no-unused-vars
-  log(`Tab ${tabId} was removed from usage when removed`);
+  log(`Tab ${tabId} is no longer tracked because it was removed`);
   tabUsage.delete(tabId);
   updateCount();
 }
 
 function activatedTab(activeInfo) {
-  log(`Tab ${activeInfo.tabId} was used an entered into usage when activated`);
+  log(`Tab ${activeInfo.tabId} was tracked because it was activated`);
   tabUsage.set(activeInfo.tabId, Date.now());
 }
 
@@ -139,7 +145,7 @@ async function sweepTabs(alarmInfo) { // eslint-disable-line no-unused-vars
 
 async function sweepHideTabs(config) {
   if (!config.enable || config.enable !== "yes") {
-    log("Not enabled");
+    log("Hiding tabs not enabled in config");
     return;
   }
   log("Sweeping tabs to hide");
@@ -152,13 +158,13 @@ async function sweepHideTabs(config) {
     if ((now - lastUsed) > MAX_LENGTH) {
       hideTab(key);
       log(`Hiding tab ${key}`);
-    }
+    } 
   }
 }
 
 async function sweepCloseTabs(config) {
   if (!config.enableClose || config.enableClose !== "yes") {
-    log("Not enabled");
+    log("Closing tabs not enabled in config");
     return;
   }
   log("Sweeping tabs to close");
